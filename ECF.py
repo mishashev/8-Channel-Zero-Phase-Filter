@@ -82,39 +82,45 @@ class Eight_Channel_Filter:
 
     def plot_ch(self,data,sub,time_axis,b_xlim,t_xlim,ch):
         """
-        Presents plot of the channels Voltage[V] vs Time[s].
+        Plot a single channel.
         :param data: data to be filtered
+        :param sub: desired subplot to present the channel
+        :param time_axis: array of time axis values
         :param b_xlim: plot bottom time limit to show in seconds
         :param t_xlim: plot top time limit to show in seconds
+        :param ch: channel to plot
         :type data: list
+        :type sub: matplotlib.axes._axes.Axes
+        :type time_axis: array
         :type b_xlim: float
         :type t_xlim: float
-        :type data: list
+        :type ch: int
         :return: None
         """
-
+        
         colors = ['b','g','r','y','m','c','orange','purple']
-        sig_length = str(time_axis[-1])+' seconds'
+        title_weight = 'demibold'
+        label_weight = 'semibold'
 
-        sub.plot(time_axis, data[ch], color=colors[ch], label=sig_length)
-        sub.set_title("Channel " + str(ch))
-        sub.set_xlabel("Time [s]")
-        sub.set_ylabel("Voltage [V]")
+        sub.plot(time_axis, data[ch], color=colors[ch])
+        sub.set_title("Channel " + str(ch), weight=title_weight)
+        sub.set_xlabel("Time [s]", weight=label_weight)
+        sub.set_ylabel("Voltage [V]", weight=label_weight)
         sub.set_xlim(b_xlim,t_xlim)
         sub.grid()
-        sub.legend(loc="upper left")
 
 
     def show_ch(self, data, channel=-1, b_xlim=0, t_xlim=0.2):
         """
         Presents plot of the channels Voltage[V] vs Time[s].
         :param data: data to be filtered
+        :param channel: channel to present (-1 for all channels)
         :param b_xlim: plot bottom time limit to show in seconds
         :param t_xlim: plot top time limit to show in seconds
         :type data: list
+        :type channel: int
         :type b_xlim: float
         :type t_xlim: float
-        :type data: list
         :return: None
         """
         
@@ -123,6 +129,11 @@ class Eight_Channel_Filter:
                         for sample in range(len(data[0]))]
         columns = 4    # Number of columns of plots
         rows = 2    # Number of rows of plots
+
+        # String texts
+        fig_title = 'Zero Phase Filtered Channel\nVoltage[V] vs Time[s]'
+        sig_time = 'Total measured time: '+str(time_axis[-1])+' seconds'
+        
         
         # Plot all 8 channels 
         if channel == -1:
@@ -132,14 +143,21 @@ class Eight_Channel_Filter:
                 for ch in range(column, columns+column):
                     sub = axs[row,ch-column]
                     self.plot_ch(data,sub,time_axis,b_xlim,t_xlim,ch)
-                    
         # Plot specific channel
         else:
             fig, axs = plt.subplots(1,1)
+            print(type(fig))
             self.plot_ch(data,axs,time_axis,b_xlim,t_xlim,
                          channel)
         
-        plt.show()
+        # Figure settings
+        fig.set_size_inches(13,9.5)
+        fig.subplots_adjust(left=0.07, right=0.98, bottom=0.05,
+                             wspace=0.6, hspace=0.3)
+        fig.suptitle(fig_title, size='xx-large', weight='heavy')
+        fig.legend([sig_time])
+
+        plt.show()  # Represent whole figure
 
 
 def main():
@@ -148,7 +166,7 @@ def main():
     df = ECF.convert_dataframe(data)    # Convert data to dataframe
     data = ECF.zp_filter(data)      # Pass through Zero-Phase Filter
 
-    ECF.show_ch(data, 5)  # Plot signals
+    ECF.show_ch(data, 1)  # Plot signals
 
     
 
