@@ -5,9 +5,19 @@ import scipy.signal as sp
 import matplotlib.pyplot as plt
 
 
-class Eight_Channel_Filter():    
+class Eight_Channel_Filter:
 
-    def load_file(file_name):
+    # Measurement settings
+    sample_freq = 4000
+    number_of_channels = 8  
+    voltage_resolution = 4.12e-7
+    num_ADC_bits = 15
+
+    def __init__(self):
+        return
+
+
+    def load_file(self, file_name):
         """
         Loads a binary file, representing a 8 channel signals.
         Then converts the the signal measurements into voltage values.
@@ -17,10 +27,6 @@ class Eight_Channel_Filter():
         :rtype: list of list
         """
 
-        number_of_channels = 8
-        voltage_resolution = 4.12e-7
-        num_ADC_bits = 15
-
         # Get the file path
         script_dir = Path(__file__).resolve().parent
         file_path = script_dir / file_name
@@ -29,16 +35,16 @@ class Eight_Channel_Filter():
         data = np.fromfile(file_path, dtype=np.uint16)
 
         # Divide the data to 8 arrays representing the signal channels
-        data = np.reshape(data, (number_of_channels, -1), order='F')
+        data = np.reshape(data, (self.number_of_channels, -1), order='F')
 
         # Represent the signal values as voltage values.
-        data = np.multiply(voltage_resolution,
-                        (data - np.float_power(2, num_ADC_bits - 1)))
+        data = np.multiply(self.voltage_resolution,
+                        (data - np.float_power(2, self.num_ADC_bits - 1)))
         
         return data
         
 
-    def convert_dataframe(data):
+    def convert_dataframe(self, data):
         """
         Converts data to Pandas DataFrame. Each index represents a channel.
         :param data: data to be converted
@@ -56,7 +62,7 @@ class Eight_Channel_Filter():
         return df
 
 
-    def zp_filter(data):
+    def zp_filter(self, data):
         """
         Pass data channels through a Zero Phase Bandpass Filter.
         :param data: data to be filtered
@@ -72,12 +78,11 @@ class Eight_Channel_Filter():
             data[i] = sp.filtfilt(b,a,data[i])
         
         return data
-            
 
 
-    def sig_plot(data, b_xlim=0, t_xlim=0.2):
+    def plot_ch(self,data,sub,time_axis,b_xlim,t_xlim,ch):
         """
-        Plots the channels Voltage[V] vs Time[s].
+        Presents plot of the channels Voltage[V] vs Time[s].
         :param data: data to be filtered
         :param b_xlim: plot bottom time limit to show in seconds
         :param t_xlim: plot top time limit to show in seconds
@@ -85,40 +90,65 @@ class Eight_Channel_Filter():
         :type b_xlim: float
         :type t_xlim: float
         :type data: list
+        :return: None
+        """
+
+        colors = ['b','g','r','y','m','c','orange','purple']
+        sig_length = str(time_axis[-1])+' seconds'
+
+        sub.plot(time_axis, data[ch], color=colors[ch], label=sig_length)
+        sub.set_title("Channel " + str(ch))
+        sub.set_xlabel("Time [s]")
+        sub.set_ylabel("Voltage [V]")
+        sub.set_xlim(b_xlim,t_xlim)
+        sub.grid()
+        sub.legend(loc="upper left")
+
+
+    def show_ch(self, data, channel=-1, b_xlim=0, t_xlim=0.2):
+        """
+        Presents plot of the channels Voltage[V] vs Time[s].
+        :param data: data to be filtered
+        :param b_xlim: plot bottom time limit to show in seconds
+        :param t_xlim: plot top time limit to show in seconds
+        :type data: list
+        :type b_xlim: float
+        :type t_xlim: float
+        :type data: list
+        :return: None
         """
         
-        sample_freq = 4000   # Sampling frequency
+        # Time lables
+        time_axis = [sample / self.sample_freq 
+                        for sample in range(len(data[0]))]
         columns = 4    # Number of columns of plots
         rows = 2    # Number of rows of plots
-
-        # Time lables
-        time_axis = [sample / sample_freq 
-                             for sample in range(len(data[0]))]
-        # Plot all 8 channels
-        fig, axs = plt.subplots(2,4)
-
-        for row in range(rows):
-            column = columns*row
-            for list in range(column, columns+column):
-                #plt.subplot(row,columns,(row,list+1))
-                i_plot = axs[row,list-column]
-                sig_length = str(time_axis[-1])+' seconds'
-                i_plot.plot(time_axis, data[list], label=sig_length)
-                i_plot.set_title("Channel" + str(list))
-                i_plot.set_xlabel("Time [s]")
-                i_plot.set_ylabel("Voltage [V]")
-                i_plot.set_xlim(b_xlim,t_xlim)
-                i_plot.grid()
-                i_plot.legend(loc="upper left")
+        
+        # Plot all 8 channels 
+        if channel == -1:
+            fig, axs = plt.subplots(rows, columns)
+            for row in range(rows):
+                column = columns*row
+                for ch in range(column, columns+column):
+                    sub = axs[row,ch-column]
+                    self.plot_ch(data,sub,time_axis,b_xlim,t_xlim,ch)
+                    
+        # Plot specific channel
+        else:
+            fig, axs = plt.subplots(1,1)
+            self.plot_ch(data,axs,time_axis,b_xlim,t_xlim,
+                         channel)
+        
         plt.show()
 
+
 def main():
-    ECF = Eight_Channel_Filter  # Create Eight Channel Filter Object
+    ECF = Eight_Channel_Filter()  # Create Eight Channel Filter Object
     data = ECF.load_file("NEUR0000.DT8")    # Load file and convert to volt
     df = ECF.convert_dataframe(data)    # Convert data to dataframe
     data = ECF.zp_filter(data)      # Pass through Zero-Phase Filter
 
-    # ECF.sig_plot(data)  # Plot signals
+    ECF.show_ch(data, 5)  # Plot signals
 
     
 
