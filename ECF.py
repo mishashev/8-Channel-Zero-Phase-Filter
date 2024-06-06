@@ -110,7 +110,7 @@ class Eight_Channel_Filter:
         sub.grid()
 
 
-    def show_ch(self, data, channel=-1, b_xlim=0, t_xlim=0.2):
+    def show_ch(self, data, channel=-1, b_xlim=0, t_xlim=0.05):
         """
         Presents plot of the channels Voltage[V] vs Time[s].
         :param data: data to be filtered
@@ -134,7 +134,6 @@ class Eight_Channel_Filter:
         fig_title = 'Zero Phase Filtered Channel\nVoltage[mV] vs Time[s]'
         sig_time = 'Total measured time: '+str(time_axis[-1])+' seconds'
         
-        
         # Plot all 8 channels 
         if channel == -1:
             fig, axs = plt.subplots(rows, columns)
@@ -146,7 +145,6 @@ class Eight_Channel_Filter:
         # Plot specific channel
         else:
             fig, axs = plt.subplots(1,1)
-            print(type(fig))
             self.plot_ch(data,axs,time_axis,b_xlim,t_xlim,
                          channel)
         
@@ -158,4 +156,3 @@ class Eight_Channel_Filter:
         fig.legend([sig_time])
 
         plt.show()  # Represent whole figure
-
