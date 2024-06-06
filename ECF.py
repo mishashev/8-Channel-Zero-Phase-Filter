@@ -10,7 +10,7 @@ class Eight_Channel_Filter:
     # Measurement settings
     sample_freq = 4000
     number_of_channels = 8  
-    voltage_resolution = 4.12e-7
+    voltage_resolution = 4.12e-4 # mV
     num_ADC_bits = 15
 
     def __init__(self):
@@ -105,7 +105,7 @@ class Eight_Channel_Filter:
         sub.plot(time_axis, data[ch], color=colors[ch])
         sub.set_title("Channel " + str(ch), weight=title_weight)
         sub.set_xlabel("Time [s]", weight=label_weight)
-        sub.set_ylabel("Voltage [V]", weight=label_weight)
+        sub.set_ylabel("Voltage [mV]", weight=label_weight)
         sub.set_xlim(b_xlim,t_xlim)
         sub.grid()
 
@@ -131,7 +131,7 @@ class Eight_Channel_Filter:
         rows = 2    # Number of rows of plots
 
         # String texts
-        fig_title = 'Zero Phase Filtered Channel\nVoltage[V] vs Time[s]'
+        fig_title = 'Zero Phase Filtered Channel\nVoltage[mV] vs Time[s]'
         sig_time = 'Total measured time: '+str(time_axis[-1])+' seconds'
         
         
@@ -159,16 +159,3 @@ class Eight_Channel_Filter:
 
         plt.show()  # Represent whole figure
 
-
-def main():
-    ECF = Eight_Channel_Filter()  # Create Eight Channel Filter Object
-    data = ECF.load_file("NEUR0000.DT8")    # Load file and convert to volt
-    df = ECF.convert_dataframe(data)    # Convert data to dataframe
-    data = ECF.zp_filter(data)      # Pass through Zero-Phase Filter
-
-    ECF.show_ch(data, 1)  # Plot signals
-
-    
-
-if __name__ == "__main__":
-    main()
