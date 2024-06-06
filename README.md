@@ -27,4 +27,5 @@ Build a python Class, that includes the following methods:
 1) Packages:
 	-numpy
 	-pandas
+	-scipy
 	-matplotlib
